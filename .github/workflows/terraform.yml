@@ -1,0 +1,55 @@
+name: Terraform CI/CD Pipeline
+
+on:
+  push:
+    branches: [ pre-prod, prod ]
+  pull_request:
+    branches: [ pre-prod, prod ]
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+    
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.0.0
+
+      - name: Terraform Init (pre-prod)
+        if: github.ref == 'refs/heads/pre-prod'
+        run: terraform init -backend-config=backend.tf
+
+      - name: Terraform Init (prod)
+        if: github.ref == 'refs/heads/prod'
+        run: terraform init -backend-config=backend.tf
+
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan (pre-prod)
+        if: github.ref == 'refs/heads/pre-prod'
+        run: terraform plan -var-file="pre-prod.tfvars" -out=tfplan
+
+      - name: Terraform Plan (prod)
+        if: github.ref == 'refs/heads/prod'
+        run: terraform plan -var-file="prod.tfvars" -out=tfplan
+
+      - name: Terraform Apply (pre-prod)
+        if: github.ref == 'refs/heads/pre-prod' && github.event_name == 'push'
+        run: terraform apply tfplan
+
+      - name: Terraform Apply (prod)
+        if: github.ref == 'refs/heads/prod' && github.event_name == 'push'
+        run: terraform apply tfplan

@@ -2,24 +2,61 @@
 
 This repository contains Terraform code to provision a modular AWS infrastructure, including VPC networking, compute resources, and logging, with support for multiple environments.
 
-## Project Structure
+## Project Directory Structure
 
-- **main.tf**: Root configuration, wires modules together.
-- **variables.tf**: Input variables for the project.
-- **provider.tf**: Provider configuration (AWS).
-- **pre-prod.tfvars / prod.tfvars**: Environment-specific variables.
-- **modules/**
-  - **network**: VPC and subnet resources.
-  - **computer**: EC2 instances and security groups.
-  - **logging**: CloudWatch and S3 logging (enabled only in `prod`).
+```text
+cloud-launchpad-tf/
+├── backend.tf             # Backend configuration for Terraform state
+├── main.tf                # Root configuration, wires modules together
+├── variables.tf           # Input variables for the project
+├── provider.tf            # Provider configuration (AWS)
+├── pre-prod.tfvars        # Pre-production environment variables
+├── prod.tfvars            # Production environment variables
+├── images/
+│   └── AWS_Architecture.png # Architecture diagram
+├── modules/
+│   ├── network/           # VPC and subnet resources
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   ├── computer/          # EC2 instances and security groups
+│   │   ├── ami.tf
+│   │   ├── main.tf
+│   │   ├── outputs.tf
+│   │   └── variables.tf
+│   └── logging/           # CloudWatch and S3 logging
+│       ├── main.tf
+│       ├── outputs.tf
+│       └── variables.tf
+└── .github/
+    └── workflows/
+        └── terraform.yml  # CI/CD pipeline configuration
+```
 
-## Usage
+### Component Descriptions
 
-This project uses Terraform workspaces to manage different environments (pre-prod and prod). Each environment has its own set of variables defined in `pre-prod.tfvars` and `prod.tfvars`.
+- **Root Configuration**:
+  - `main.tf`: Orchestrates the modules and defines the overall architecture
+  - `variables.tf`: Declares input variables used across the project
+  - `provider.tf`: Configures the AWS provider
+  - `backend.tf`: Configures the backend for storing Terraform state
+  - `pre-prod.tfvars` & `prod.tfvars`: Environment-specific variable values
 
-### Initialize
+- **Modules**:
+  - **Network**: Creates VPC, subnets, internet gateway, and route tables
+  - **Computer**: Provisions EC2 instances and configures security groups
+  - **Logging**: Sets up CloudWatch log groups and S3 bucket for VPC flow logs (enabled only in production)
 
-```sh
+## Running the Project
+
+`this instruction is to use manual steps to run the project it is also automated in the CI/CD pipeline just push your code `
+This project uses Terraform workspaces to manage different environments (pre-prod and prod). Follow these steps to deploy the infrastructure:
+
+### 1. Initialize Terraform
+
+Initialize your Terraform working directory:
+
+```bash
 terraform init
 ```
 
@@ -102,8 +139,6 @@ terraform apply -var-file=prod.tfvars
 - Logging resources are only created in the `prod` environment.
 - All resources are tagged with the project name for easy identification.
 - Sensitive files (`*.tfvars`) are excluded from version control.
-
-## Architecture
 
 ## Architecture
 
